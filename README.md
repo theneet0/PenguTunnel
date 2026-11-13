@@ -26,11 +26,15 @@ curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-cdn.sh | ba
 
 ### ۳. اسکریپت اختصاصی سرورهای داخل ایران / GhProxy (میرور ضد تحریم، دانلود مستقیم هسته از GhProxy):
 ```bash
-bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
+bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
 ```
 یا از طریق پایپ:
 ```bash
-curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh | bash
+curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh | bash
+```
+یا میرور جایگزین (در صورت اختلال موقت پروکسی):
+```bash
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-iran.sh)
 ```
 
 ---
@@ -61,6 +65,7 @@ pengutunnel
 | فایل | الگوریتم | مقدار SHA256 |
 |---|---|---|
 | `pengutunnel` | SHA-256 | `e70f4c1612e936108bdb17f0d8515342699242cc977b9037ba4a442f0af477fa` |
+| `pengutunnel.gz` | SHA-256 | `8d813052468ca5d016f0f499d5b27ca8fc308086b5d867ba18a6349cf87363c7` |
 
 ---
 
@@ -99,7 +104,11 @@ bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-cdn.
 
 ### 3. Dedicated Iran GhProxy Mirror (For servers inside Iran):
 ```bash
-bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
+bash <(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
+```
+or via fallback CDN mirror:
+```bash
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-iran.sh)
 ```
 
 After installation, simply type `pengu` anywhere in your terminal to open the management menu.

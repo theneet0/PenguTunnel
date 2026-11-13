@@ -32,11 +32,21 @@ cd "$INSTALL_DIR"
 export PENGU_MIRROR="iran"
 echo "iran" > "${INSTALL_DIR}/.mirror" 2>/dev/null || true
 
+# Parse flags if supplied (filter out mirror selector flags before delegating)
+PASSED_ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --cdn|--jsdelivr|--iran|--ghproxy|--github|--direct|--mirror=*) ;;
+    *) PASSED_ARGS+=("$arg") ;;
+  esac
+done
+
 # Install prerequisites if missing
 install_deps() {
   local pkgs=()
   command -v curl >/dev/null 2>&1 || pkgs+=(curl)
   command -v wget >/dev/null 2>&1 || pkgs+=(wget)
+  command -v gzip >/dev/null 2>&1 || pkgs+=(gzip)
   command -v sha256sum >/dev/null 2>&1 || pkgs+=(coreutils)
   if [[ ${#pkgs[@]} -gt 0 ]]; then
     echo -e "\033[36m[*] Installing prerequisites: ${pkgs[*]}...\033[0m"
@@ -86,13 +96,15 @@ fi
 
 if [[ $need_core_dl -eq 1 ]]; then
   echo -e "\033[36m[*] Dedicated Iran / GhProxy Anti-Filter Mirror Active\033[0m"
-  echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core (~44MB) via Iran GhProxy mirror...\033[0m"
+  echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core via Iran GhProxy mirror...\033[0m"
   CORE_URLS=(
-    "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-    "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+    "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
     "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-    "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+    "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
     "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
+    "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
+    "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+    "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
     "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
     "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
   )
@@ -101,6 +113,11 @@ if [[ $need_core_dl -eq 1 ]]; then
     echo -e "\033[33m[>] Trying Iran mirror: ${url}\033[0m"
     rm -f "${BIN_PATH}.tmp"
     if download_file "$url" "${BIN_PATH}.tmp" 300; then
+      if [[ "$url" == *.gz ]]; then
+        if command -v gzip >/dev/null 2>&1; then
+          gzip -dc "${BIN_PATH}.tmp" > "${BIN_PATH}.tmp.dec" 2>/dev/null && mv -f "${BIN_PATH}.tmp.dec" "${BIN_PATH}.tmp" || true
+        fi
+      fi
       downloaded_sha="$(sha256sum "${BIN_PATH}.tmp" 2>/dev/null | awk '{print $1}')"
       if [[ "$downloaded_sha" == "$OFFLINE_SHA256" ]]; then
         mv -f "${BIN_PATH}.tmp" "$BIN_PATH"
@@ -127,11 +144,11 @@ else
 fi
 
 # Download/update install.sh
-echo -e "\033[36m[*] Fetching latest installer menu script via Iran GhProxy mirror...\033[0m"
+echo -e "\033[36m[*] Fetching latest installer menu script via Iran mirror...\033[0m"
 SCRIPT_URLS=(
-  "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
   "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
   "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/install.sh"
+  "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
   "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
 )
 script_success=0
@@ -176,11 +193,11 @@ echo -e "\033[32m[ok] Setup completed! Shortcuts 'pengu' and 'pengutunnel' are a
 
 # Safe execution of install.sh
 if [[ -t 0 ]]; then
-  exec bash "$SCRIPT_PATH" "$@"
+  exec bash "$SCRIPT_PATH" "${PASSED_ARGS[@]}"
 elif ( : < /dev/tty ) 2>/dev/null; then
-  exec bash "$SCRIPT_PATH" "$@" < /dev/tty
-elif [[ $# -gt 0 ]]; then
-  exec bash "$SCRIPT_PATH" "$@"
+  exec bash "$SCRIPT_PATH" "${PASSED_ARGS[@]}" < /dev/tty
+elif [[ ${#PASSED_ARGS[@]} -gt 0 ]]; then
+  exec bash "$SCRIPT_PATH" "${PASSED_ARGS[@]}"
 else
   echo -e "\033[36m[*] Interactive terminal not detected (headless or pipe session).\033[0m"
   echo -e "\033[32m[ok] Core binary and installer are installed at ${INSTALL_DIR}.\033[0m"

@@ -180,6 +180,7 @@ install_prereqs(){
   if command -v apt-get >/dev/null 2>&1; then
     local miss=()
     command -v curl >/dev/null 2>&1 || miss+=(curl)
+    command -v gzip >/dev/null 2>&1 || miss+=(gzip)
     command -v tar  >/dev/null 2>&1 || miss+=(tar)
     command -v ip   >/dev/null 2>&1 || miss+=(iproute2)
     command -v nft  >/dev/null 2>&1 || miss+=(nftables)
@@ -191,6 +192,7 @@ install_prereqs(){
   elif command -v yum >/dev/null 2>&1; then
     local miss=()
     command -v curl >/dev/null 2>&1 || miss+=(curl)
+    command -v gzip >/dev/null 2>&1 || miss+=(gzip)
     command -v tar  >/dev/null 2>&1 || miss+=(tar)
     command -v ip   >/dev/null 2>&1 || miss+=(iproute)
     command -v nft  >/dev/null 2>&1 || miss+=(nftables)
@@ -238,32 +240,40 @@ install_core(){
     case "$mirror" in
       cdn|jsdelivr)
         urls=(
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
-          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v5.4.1/pengutunnel"
-          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
           "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         )
         ;;
       iran|ghproxy)
         urls=(
-          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-          "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
+          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
+          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
         )
         ;;
       *)
         urls=(
+          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
           "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
-          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-          "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         )
         ;;
     esac
@@ -285,6 +295,11 @@ install_core(){
         fi
       fi
       if [[ -f "${BIN_PATH}.new" ]]; then
+        if [[ "$u" == *.gz ]]; then
+          if command -v gzip >/dev/null 2>&1; then
+            gzip -dc "${BIN_PATH}.new" > "${BIN_PATH}.new.dec" 2>/dev/null && mv -f "${BIN_PATH}.new.dec" "${BIN_PATH}.new" || true
+          fi
+        fi
         actual="$(sha256sum "${BIN_PATH}.new" 2>/dev/null | awk '{print $1}')"
         if [[ "$actual" == "$OFFLINE_SHA256" ]]; then
           chmod +x "${BIN_PATH}.new"
@@ -1612,18 +1627,6 @@ menu(){
   done
 }
 
-if [[ "${1:-}" == --check ]]; then
-  (( $# == 1 )) || { err "Usage: bash install.sh --check"; exit 2; }
-  chk_src="$BUNDLE_DIR/pengutunnel"
-  [[ -f "$chk_src" ]] || chk_src="$BIN_PATH"
-  [[ -f "$chk_src" && "$(sha256sum "$chk_src" 2>/dev/null | awk '{print $1}')" == "$OFFLINE_SHA256" ]] || {
-    err "Bundled binary checksum mismatch; nothing changed."; exit 1;
-  }
-  bash -n "${BASH_SOURCE[0]}" || exit 1
-  ok "Package verification passed: core v5.4.1 / installer v5.3.1"
-  exit 0
-fi
-
 # Parse mirror flags if supplied
 _INSTALL_ARGS=()
 for _arg in "$@"; do
@@ -1639,6 +1642,18 @@ if [[ ${#_INSTALL_ARGS[@]} -gt 0 ]]; then
   set -- "${_INSTALL_ARGS[@]}"
 else
   set --
+fi
+
+if [[ "${1:-}" == --check ]]; then
+  (( $# == 1 )) || { err "Usage: bash install.sh --check"; exit 2; }
+  chk_src="$BUNDLE_DIR/pengutunnel"
+  [[ -f "$chk_src" ]] || chk_src="$BIN_PATH"
+  [[ -f "$chk_src" && "$(sha256sum "$chk_src" 2>/dev/null | awk '{print $1}')" == "$OFFLINE_SHA256" ]] || {
+    err "Bundled binary checksum mismatch; nothing changed."; exit 1;
+  }
+  bash -n "${BASH_SOURCE[0]}" || exit 1
+  ok "Package verification passed: core v5.4.1 / installer v5.3.1"
+  exit 0
 fi
 
 need_root
