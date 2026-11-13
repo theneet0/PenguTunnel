@@ -4,18 +4,23 @@
 
 ## 🐧 راهنمای نصب سریع و اجرای مستقیم با یک دستور
 
-برای دانلود سریع آخرین هسته هماهنگ‌شده PenguTunnel (`v5.4.1`) و اسکریپت منو (`v5.3.1`) و اجرای فوری آن در سرور، یکی از دستورات زیر را به عنوان روت (`root`) اجرا کنید:
+برای دانلود سریع آخرین هسته هماهنگ‌شده PenguTunnel (`v5.4.1`) و اسکریپت منو (`v5.3.1`) و اجرای فوری آن در سرور، یکی از دستورات زیر را به عنوان روت (`root`) در ترمینال اجرا کنید:
 
-### ۱. دستور اجرای سریع (پیشنهادی):
+### ۱. دستور اجرای مستقیم (پیشنهادی):
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
 ```
-یا با `curl | bash`:
+یا از طریق پایپ:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh | bash
 ```
 
-### ۲. دستور مخصوص سرورهای ایران (در صورت اختلال یا فیلتر GitHub):
+### ۲. لینک سریع CDN کلودفلر (بدون فیلتر و پرسرعت):
+```bash
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run.sh)
+```
+
+### ۳. دستور مخصوص سرورهای داخل ایران (میرور اختصاصی ضد تحریم/فیلتر):
 ```bash
 bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
 ```
@@ -35,10 +40,11 @@ pengutunnel
 ---
 
 ### 📦 ویژگی‌های این نسخه (v5.4.1 Offline Fix 1):
-- **رفع محدودیت لایسنس**: حذف بررسی لایسنس و تایم‌اوت باینری، عدم نیاز به کلید یا ارتباط با سرور سازنده.
+- **رفع محدودیت لایسنس**: حذف کامل بررسی لایسنس و تایم‌اوت باینری، بدون نیاز به کلید یا ارتباط با سرور سازنده.
 - **پایداری کامل Data Plane**: حل مشکل خطای انقضای اثبات لایسنس و خطای `lt2 required but data plane not bound`.
 - **فورواردر کرنلی nftables**: هدایت بهینه ترافیک UDP روی کرنل لینوکس از طریق قوانین nftables.
 - **دانلود و اجرای کاملاً خودکار**: بررسی معماری سرور (x86_64)، تأیید صحت هش امنیتی باینری (SHA256)، رفع نیازمندی‌ها و بازکردن منوی مدیریتی.
+- **پشتیبانی کامل از سشن‌های تعاملی و پایپینگ**: عملکرد بی‌نقص با `curl | bash`، اتصال خودکار به `/dev/tty` بدون افتادن در لوپ بی‌پایان یا خطا در محیط‌های غیرتعاملی.
 - **حفظ تنظیمات قبلی**: در صورتی که نسخه قبلی پنگوتانل روی سرور داشته باشید، کانفیگ‌ها و کلیدهای PSK حفظ می‌شوند.
 
 ---
@@ -77,6 +83,10 @@ Run this single command on your Linux amd64/x86_64 server:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
+```
+Or via Cloudflare CDN:
+```bash
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run.sh)
 ```
 
 After installation, simply type `pengu` anywhere in your terminal to open the management menu.

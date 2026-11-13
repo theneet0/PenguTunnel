@@ -5,11 +5,8 @@
 # Version: 5.4.1 (Offline Fix 1)
 # ==============================================================================
 
-# Reconnect stdin if running inside curl | bash pipe
-[[ -t 0 ]] || exec < /dev/tty 2>/dev/null || true
-
 # Root check
-if [[ $EUID -ne 0 ]]; then
+if [[ -z "${BYPASS_ROOT_CHECK:-}" && ${EUID:-$(id -u)} -ne 0 ]]; then
   echo -e "\033[31m[x] Error: This script must be run as root (sudo bash).\033[0m" >&2
   exit 1
 fi
@@ -37,16 +34,42 @@ install_deps() {
   command -v curl >/dev/null 2>&1 || pkgs+=(curl)
   command -v wget >/dev/null 2>&1 || pkgs+=(wget)
   command -v sha256sum >/dev/null 2>&1 || pkgs+=(coreutils)
-  if [ ${#pkgs[@]} -gt 0 ]; then
+  if [[ ${#pkgs[@]} -gt 0 ]]; then
     echo -e "\033[36m[*] Installing prerequisites: ${pkgs[*]}...\033[0m"
     if command -v apt-get >/dev/null 2>&1; then
-      apt-get update -qq && apt-get install -y -qq "${pkgs[@]}" >/dev/null 2>&1
+      DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null 2>&1 || true
+      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${pkgs[@]}" >/dev/null 2>&1 || true
+    elif command -v dnf >/dev/null 2>&1; then
+      dnf install -y -q "${pkgs[@]}" >/dev/null 2>&1 || true
     elif command -v yum >/dev/null 2>&1; then
-      yum install -y -q "${pkgs[@]}" >/dev/null 2>&1
+      yum install -y -q "${pkgs[@]}" >/dev/null 2>&1 || true
     fi
   fi
 }
 install_deps
+
+# Helper for download with appropriate progress display & timeouts
+download_file() {
+  local url="$1"
+  local output="$2"
+  local timeout="${3:-300}"
+
+  if command -v curl >/dev/null 2>&1; then
+    if [[ -t 1 || -t 2 ]]; then
+      curl -fL --connect-timeout 8 --max-time "$timeout" --retry 2 --progress-bar "$url" -o "$output"
+    else
+      curl -fsSL --connect-timeout 8 --max-time "$timeout" --retry 2 "$url" -o "$output"
+    fi
+  elif command -v wget >/dev/null 2>&1; then
+    if [[ -t 1 || -t 2 ]]; then
+      wget -q --show-progress --connect-timeout=8 --timeout="$timeout" --tries=2 "$url" -O "$output"
+    else
+      wget -q --connect-timeout=8 --timeout="$timeout" --tries=2 "$url" -O "$output"
+    fi
+  else
+    return 1
+  fi
+}
 
 # Check core binary
 need_core_dl=1
@@ -61,29 +84,34 @@ if [[ $need_core_dl -eq 1 ]]; then
   echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core (~44MB)...\033[0m"
   CORE_URLS=(
     "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
-    "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
     "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+    "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+    "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
   )
   core_success=0
   for url in "${CORE_URLS[@]}"; do
-    echo -e "\033[33m[>] Trying: ${url}\033[0m"
-    if curl -fL --progress-bar "$url" -o "${BIN_PATH}.tmp" 2>/dev/null || wget -q --show-progress "$url" -O "${BIN_PATH}.tmp" 2>/dev/null; then
+    echo -e "\033[33m[>] Trying mirror: ${url}\033[0m"
+    rm -f "${BIN_PATH}.tmp"
+    if download_file "$url" "${BIN_PATH}.tmp" 300; then
       downloaded_sha="$(sha256sum "${BIN_PATH}.tmp" 2>/dev/null | awk '{print $1}')"
       if [[ "$downloaded_sha" == "$OFFLINE_SHA256" ]]; then
         mv -f "${BIN_PATH}.tmp" "$BIN_PATH"
-        chmod +x "$BIN_PATH"
-        echo -e "\033[32m[ok] PenguTunnel core verified successfully.\033[0m"
+        chmod +x "$BIN_PATH" 2>/dev/null || true
+        echo -e "\033[32m[ok] PenguTunnel core verified successfully (SHA256: ${OFFLINE_SHA256:0:16}...).\033[0m"
         core_success=1
         break
       else
         echo -e "\033[31m[!] Checksum mismatch for ${url}, trying next mirror...\033[0m"
         rm -f "${BIN_PATH}.tmp"
       fi
+    else
+      echo -e "\033[33m[!] Connection failed for ${url}, trying next mirror...\033[0m"
+      rm -f "${BIN_PATH}.tmp"
     fi
   done
 
   if [[ $core_success -ne 1 ]]; then
-    echo -e "\033[31m[x] Failed to download valid PenguTunnel core binary.\033[0m" >&2
+    echo -e "\033[31m[x] Failed to download valid PenguTunnel core binary from all mirrors.\033[0m" >&2
     exit 1
   fi
 else
@@ -94,15 +122,17 @@ fi
 echo -e "\033[36m[*] Fetching latest installer menu script...\033[0m"
 SCRIPT_URLS=(
   "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
-  "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/install.sh"
+  "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/install.sh"
   "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
+  "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/install.sh"
 )
 script_success=0
 for url in "${SCRIPT_URLS[@]}"; do
-  if curl -fsSL "$url" -o "${SCRIPT_PATH}.tmp" 2>/dev/null || wget -q "$url" -O "${SCRIPT_PATH}.tmp" 2>/dev/null; then
+  rm -f "${SCRIPT_PATH}.tmp"
+  if download_file "$url" "${SCRIPT_PATH}.tmp" 30; then
     if bash -n "${SCRIPT_PATH}.tmp" >/dev/null 2>&1; then
       mv -f "${SCRIPT_PATH}.tmp" "$SCRIPT_PATH"
-      chmod +x "$SCRIPT_PATH"
+      chmod +x "$SCRIPT_PATH" 2>/dev/null || true
       script_success=1
       break
     else
@@ -119,15 +149,34 @@ if [[ $script_success -ne 1 ]]; then
 fi
 
 # Create global shortcut 'pengu' and 'pengutunnel'
-cat << 'EOF_PENGU' > /usr/local/bin/pengu 2>/dev/null || true
+create_shortcut() {
+  for bin_dir in /usr/local/bin /usr/bin; do
+    if [[ -d "$bin_dir" && -w "$bin_dir" ]]; then
+      cat << 'EOF_PENGU' > "${bin_dir}/pengu" 2>/dev/null || continue
 #!/usr/bin/env bash
-cd /root/pengutunnel && ./install.sh "$@"
+cd /root/pengutunnel && exec bash install.sh "$@"
 EOF_PENGU
-chmod +x /usr/local/bin/pengu 2>/dev/null || true
-ln -sf /usr/local/bin/pengu /usr/local/bin/pengutunnel 2>/dev/null || true
+      chmod +x "${bin_dir}/pengu" 2>/dev/null || true
+      ln -sf "${bin_dir}/pengu" "${bin_dir}/pengutunnel" 2>/dev/null || true
+      break
+    fi
+  done
+}
+create_shortcut
 
-echo -e "\033[32m[ok] Ready! Starting PenguTunnel menu...\033[0m"
-echo -e "\033[36m[*] Shortcut created: you can now run 'pengu' anytime from anywhere.\033[0m"
-sleep 1
+echo -e "\033[32m[ok] Setup completed! Shortcuts 'pengu' and 'pengutunnel' are active.\033[0m"
 
-exec bash "$SCRIPT_PATH" "$@"
+# Safe execution of install.sh
+# Handles interactive terminal, piped input (curl | bash), and headless execution cleanly
+if [[ -t 0 ]]; then
+  exec bash "$SCRIPT_PATH" "$@"
+elif ( : < /dev/tty ) 2>/dev/null; then
+  exec bash "$SCRIPT_PATH" "$@" < /dev/tty
+elif [[ $# -gt 0 ]]; then
+  exec bash "$SCRIPT_PATH" "$@"
+else
+  echo -e "\033[36m[*] Interactive terminal not detected (headless or pipe session).\033[0m"
+  echo -e "\033[32m[ok] Core binary and installer are installed at ${INSTALL_DIR}.\033[0m"
+  echo -e "\033[36m[*] Run \033[1;37mpengu\033[0m\033[36m in an interactive terminal to open the tunnel menu.\033[0m"
+  exit 0
+fi

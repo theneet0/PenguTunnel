@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Pengu menu 5.3.1; pinned core 5.4.1 offline-1 / reviewed data-plane fix
-[[ -t 0 ]] || exec < /dev/tty 2>/dev/null || true
 BUNDLE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P || echo "/root/pengutunnel")"
 OFFLINE_SHA256="e70f4c1612e936108bdb17f0d8515342699242cc977b9037ba4a442f0af477fa"
 [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "x86_64" ]] || { echo "Linux amd64 is required." >&2; exit 1; }
@@ -233,13 +232,28 @@ install_core(){
     echo "Core binary not found in bundle dir. Downloading PenguTunnel v5.4.1 core from GitHub..."
     local urls=(
       "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
-      "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
       "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+      "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+      "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
     )
     local dl_ok=0
     for u in "${urls[@]}"; do
       echo "Fetching core: $u ..."
-      if curl -fL --progress-bar "$u" -o "${BIN_PATH}.new" 2>/dev/null || wget -q --show-progress "$u" -O "${BIN_PATH}.new" 2>/dev/null; then
+      rm -f "${BIN_PATH}.new"
+      if command -v curl >/dev/null 2>&1; then
+        if [[ -t 1 || -t 2 ]]; then
+          curl -fL --connect-timeout 8 --max-time 300 --retry 2 --progress-bar "$u" -o "${BIN_PATH}.new" || true
+        else
+          curl -fsSL --connect-timeout 8 --max-time 300 --retry 2 "$u" -o "${BIN_PATH}.new" || true
+        fi
+      elif command -v wget >/dev/null 2>&1; then
+        if [[ -t 1 || -t 2 ]]; then
+          wget -q --show-progress --connect-timeout=8 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
+        else
+          wget -q --connect-timeout=8 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
+        fi
+      fi
+      if [[ -f "${BIN_PATH}.new" ]]; then
         actual="$(sha256sum "${BIN_PATH}.new" 2>/dev/null | awk '{print $1}')"
         if [[ "$actual" == "$OFFLINE_SHA256" ]]; then
           chmod +x "${BIN_PATH}.new"
@@ -268,14 +282,17 @@ install_core(){
 }
 
 ensure_core(){
-  if [[ -d /usr/local/bin ]]; then
-    cat << 'EOF_PENGU_SH' > /usr/local/bin/pengu 2>/dev/null || true
+  for bin_dir in /usr/local/bin /usr/bin; do
+    if [[ -d "$bin_dir" && -w "$bin_dir" ]]; then
+      cat << 'EOF_PENGU_SH' > "${bin_dir}/pengu" 2>/dev/null || continue
 #!/usr/bin/env bash
-cd /root/pengutunnel && ./install.sh "$@"
+cd /root/pengutunnel && exec bash install.sh "$@"
 EOF_PENGU_SH
-    chmod +x /usr/local/bin/pengu 2>/dev/null || true
-    ln -sf /usr/local/bin/pengu /usr/local/bin/pengutunnel 2>/dev/null || true
-  fi
+      chmod +x "${bin_dir}/pengu" 2>/dev/null || true
+      ln -sf "${bin_dir}/pengu" "${bin_dir}/pengutunnel" 2>/dev/null || true
+      break
+    fi
+  done
   if [[ -x "$BIN_PATH" && "$(sha256sum "$BIN_PATH" | awk '{print $1}')" == "$OFFLINE_SHA256" ]]; then return 0; fi
   install_prereqs || return 1
   install_core || return 1
