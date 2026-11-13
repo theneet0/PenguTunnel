@@ -229,28 +229,59 @@ install_core(){
       return 0
     fi
     mkdir -p "$INSTALL_DIR" || return 1
-    echo "Core binary not found in bundle dir. Downloading PenguTunnel v5.4.1 core from GitHub..."
-    local urls=(
-      "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
-      "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
-      "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-      "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-    )
+    local mirror="${PENGU_MIRROR:-}"
+    if [[ -z "$mirror" && -f "${INSTALL_DIR}/.mirror" ]]; then
+      mirror="$(cat "${INSTALL_DIR}/.mirror" 2>/dev/null | tr -d ' \r\n' || true)"
+    fi
+    echo "Core binary not found in bundle dir. Downloading PenguTunnel v5.4.1 core..."
+    local urls=()
+    case "$mirror" in
+      cdn|jsdelivr)
+        urls=(
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v5.4.1/pengutunnel"
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        )
+        ;;
+      iran|ghproxy)
+        urls=(
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
+          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        )
+        ;;
+      *)
+        urls=(
+          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
+          "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
+          "https://ghproxy.net/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        )
+        ;;
+    esac
     local dl_ok=0
     for u in "${urls[@]}"; do
       echo "Fetching core: $u ..."
       rm -f "${BIN_PATH}.new"
       if command -v curl >/dev/null 2>&1; then
         if [[ -t 1 || -t 2 ]]; then
-          curl -fL --connect-timeout 8 --max-time 300 --retry 2 --progress-bar "$u" -o "${BIN_PATH}.new" || true
+          curl -fL --connect-timeout 6 --max-time 300 --retry 2 --progress-bar "$u" -o "${BIN_PATH}.new" || true
         else
-          curl -fsSL --connect-timeout 8 --max-time 300 --retry 2 "$u" -o "${BIN_PATH}.new" || true
+          curl -fsSL --connect-timeout 6 --max-time 300 --retry 2 "$u" -o "${BIN_PATH}.new" || true
         fi
       elif command -v wget >/dev/null 2>&1; then
         if [[ -t 1 || -t 2 ]]; then
-          wget -q --show-progress --connect-timeout=8 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
+          wget -q --show-progress --connect-timeout=6 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
         else
-          wget -q --connect-timeout=8 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
+          wget -q --connect-timeout=6 --timeout=300 --tries=2 "$u" -O "${BIN_PATH}.new" || true
         fi
       fi
       if [[ -f "${BIN_PATH}.new" ]]; then
@@ -1591,6 +1622,23 @@ if [[ "${1:-}" == --check ]]; then
   bash -n "${BASH_SOURCE[0]}" || exit 1
   ok "Package verification passed: core v5.4.1 / installer v5.3.1"
   exit 0
+fi
+
+# Parse mirror flags if supplied
+_INSTALL_ARGS=()
+for _arg in "$@"; do
+  case "$_arg" in
+    --cdn|--jsdelivr) export PENGU_MIRROR="cdn" ;;
+    --iran|--ghproxy) export PENGU_MIRROR="iran" ;;
+    --github|--direct) export PENGU_MIRROR="github" ;;
+    --mirror=*) export PENGU_MIRROR="${_arg#*=}" ;;
+    *) _INSTALL_ARGS+=("$_arg") ;;
+  esac
+done
+if [[ ${#_INSTALL_ARGS[@]} -gt 0 ]]; then
+  set -- "${_INSTALL_ARGS[@]}"
+else
+  set --
 fi
 
 need_root

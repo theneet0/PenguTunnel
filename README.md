@@ -6,7 +6,7 @@
 
 برای دانلود سریع آخرین هسته هماهنگ‌شده PenguTunnel (`v5.4.1`) و اسکریپت منو (`v5.3.1`) و اجرای فوری آن در سرور، یکی از دستورات زیر را به عنوان روت (`root`) در ترمینال اجرا کنید:
 
-### ۱. دستور اجرای مستقیم (پیشنهادی):
+### ۱. دستور اجرای مستقیم گیت‌هاب (پیشنهادی برای سرورهای خارج با دسترسی مستقیم):
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
 ```
@@ -15,14 +15,22 @@ bash <(curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/ru
 curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh | bash
 ```
 
-### ۲. لینک سریع CDN کلودفلر (بدون فیلتر و پرسرعت):
+### ۲. اسکریپت اختصاصی CDN کلودفلر / jsDelivr (بدون فیلتر، دانلود مستقیم هسته از CDN بدون لمس گیت‌هاب):
 ```bash
-bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run.sh)
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-cdn.sh)
+```
+یا از طریق پایپ:
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-cdn.sh | bash
 ```
 
-### ۳. دستور مخصوص سرورهای داخل ایران (میرور اختصاصی ضد تحریم/فیلتر):
+### ۳. اسکریپت اختصاصی سرورهای داخل ایران / GhProxy (میرور ضد تحریم، دانلود مستقیم هسته از GhProxy):
 ```bash
-bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
+bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
+```
+یا از طریق پایپ:
+```bash
+curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh | bash
 ```
 
 ---
@@ -79,14 +87,19 @@ bash install.sh --check
 
 ## English Quick Start
 
-Run this single command on your Linux amd64/x86_64 server:
-
+### 1. GitHub Direct (Recommended for servers outside Iran):
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run.sh)
 ```
-Or via Cloudflare CDN:
+
+### 2. Dedicated Cloudflare jsDelivr CDN (Unfiltered & High Speed - downloads directly from CDN):
 ```bash
-bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run.sh)
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/run-cdn.sh)
+```
+
+### 3. Dedicated Iran GhProxy Mirror (For servers inside Iran):
+```bash
+bash <(curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/run-iran.sh)
 ```
 
 After installation, simply type `pengu` anywhere in your terminal to open the management menu.
