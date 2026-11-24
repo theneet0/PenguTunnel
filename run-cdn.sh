@@ -3,7 +3,7 @@
 # PenguTunnel Fast One-Click Installer & Runner (Cloudflare jsDelivr CDN Mirror)
 # Repository: https://github.com/theneet0/PenguTunnel
 # Mirror: jsDelivr / Cloudflare CDN (Global High Speed & Unblocked)
-# Version: 5.4.1 (Offline Fix 1)
+# Version: 6.2.1 (Offline Fix 1)
 # ==============================================================================
 
 # Root check
@@ -24,7 +24,7 @@ set -eo pipefail
 INSTALL_DIR="/root/pengutunnel"
 BIN_PATH="${INSTALL_DIR}/pengutunnel"
 SCRIPT_PATH="${INSTALL_DIR}/install.sh"
-OFFLINE_SHA256="e70f4c1612e936108bdb17f0d8515342699242cc977b9037ba4a442f0af477fa"
+OFFLINE_SHA256="b58e38316553b2fb06bbaeab050f07505e2aa93c563008b4665a6b34e77537f3"
 
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
@@ -96,15 +96,15 @@ fi
 
 if [[ $need_core_dl -eq 1 ]]; then
   echo -e "\033[36m[*] Dedicated jsDelivr CDN Mirror Active (Cloudflare Edge Network)\033[0m"
-  echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core from jsDelivr CDN...\033[0m"
+  echo -e "\033[36m[*] Downloading PenguTunnel v6.2.1 core from jsDelivr CDN...\033[0m"
   CORE_URLS=(
     "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
     "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
     "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
     "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
     "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-    "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-    "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+    "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+    "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
     "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
   )
   core_success=0
@@ -146,7 +146,7 @@ fi
 echo -e "\033[36m[*] Fetching latest installer menu script via jsDelivr CDN...\033[0m"
 SCRIPT_URLS=(
   "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/install.sh"
-  "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v5.4.1/install.sh"
+  "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v6.2.1/install.sh"
   "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
   "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
   "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"

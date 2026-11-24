@@ -3,7 +3,7 @@
 # PenguTunnel Fast One-Click Installer & Runner (GitHub Direct / Global)
 # Repository: https://github.com/theneet0/PenguTunnel
 # Mirror: GitHub Direct (Global High-Speed)
-# Version: 5.4.1 (Offline Fix 1)
+# Version: 6.2.1 (Offline Fix 1)
 # ==============================================================================
 
 # Root check
@@ -24,7 +24,7 @@ set -eo pipefail
 INSTALL_DIR="/root/pengutunnel"
 BIN_PATH="${INSTALL_DIR}/pengutunnel"
 SCRIPT_PATH="${INSTALL_DIR}/install.sh"
-OFFLINE_SHA256="e70f4c1612e936108bdb17f0d8515342699242cc977b9037ba4a442f0af477fa"
+OFFLINE_SHA256="b58e38316553b2fb06bbaeab050f07505e2aa93c563008b4665a6b34e77537f3"
 
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
@@ -106,38 +106,38 @@ if [[ $need_core_dl -eq 1 ]]; then
   case "$PENGU_MIRROR" in
     cdn|jsdelivr)
       echo -e "\033[36m[*] Dedicated jsDelivr CDN Mirror Active\033[0m"
-      echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core via jsDelivr CDN...\033[0m"
+      echo -e "\033[36m[*] Downloading PenguTunnel v6.2.1 core via jsDelivr CDN...\033[0m"
       CORE_URLS=(
         "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
         "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
         "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
         "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-        "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-        "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+        "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
         "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
       )
       ;;
     iran|ghproxy)
       echo -e "\033[36m[*] Dedicated Iran / GhProxy Mirror Active\033[0m"
-      echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core via Iran GhProxy mirror...\033[0m"
+      echo -e "\033[36m[*] Downloading PenguTunnel v6.2.1 core via Iran GhProxy mirror...\033[0m"
       CORE_URLS=(
         "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
         "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
         "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
-        "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-        "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+        "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
         "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-        "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
       )
       ;;
     *)
-      echo -e "\033[36m[*] Downloading PenguTunnel v5.4.1 core (~44MB)...\033[0m"
+      echo -e "\033[36m[*] Downloading PenguTunnel v6.2.1 core (~45MB)...\033[0m"
       CORE_URLS=(
-        "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-        "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+        "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+        "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
         "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
         "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
@@ -191,7 +191,7 @@ case "$PENGU_MIRROR" in
   cdn|jsdelivr)
     SCRIPT_URLS=(
       "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/install.sh"
-      "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v5.4.1/install.sh"
+      "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@v6.2.1/install.sh"
       "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
       "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
       "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
@@ -208,7 +208,7 @@ case "$PENGU_MIRROR" in
   *)
     SCRIPT_URLS=(
       "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
-      "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/install.sh"
+      "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/install.sh"
       "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/install.sh"
       "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"
       "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/install.sh"

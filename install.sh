@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Pengu menu 5.3.1; pinned core 5.4.1 offline-1 / reviewed data-plane fix
+# Pengu menu 5.4.0; pinned core 6.2.1 offline-1 / reviewed data-plane fix
 BUNDLE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd -P || echo "/root/pengutunnel")"
-OFFLINE_SHA256="e70f4c1612e936108bdb17f0d8515342699242cc977b9037ba4a442f0af477fa"
+OFFLINE_SHA256="b58e38316553b2fb06bbaeab050f07505e2aa93c563008b4665a6b34e77537f3"
 [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "x86_64" ]] || { echo "Linux amd64 is required." >&2; exit 1; }
 command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 1; }
 set -o pipefail
 
-SCRIPT_VERSION="5.3.1"
+SCRIPT_VERSION="5.4.0"
 INSTALL_DIR="/root/pengutunnel"          # core + configs + logs all live here
 BIN_PATH="/root/pengutunnel/pengutunnel" # the core binary
 SERVICE_DIR="/etc/systemd/system"
@@ -118,7 +118,7 @@ core_at_least(){ refresh_core_version; [[ -n "$CORE_VER" && "$(printf '%s\n%s\n'
 load_sysinfo(){
   SYS_IP="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<NF;i++) if($i=="src") {print $(i+1);exit}}')"
   SYS_IP6="$(ip -6 -o addr show scope global 2>/dev/null | awk 'NR==1 {split($4,a,"/");print a[1]}')"
-  SYS_LOC="local"; SYS_DC="offline"; CORE_LATEST="v5.4.1"
+  SYS_LOC="local"; SYS_DC="offline"; CORE_LATEST="v6.2.1"
 }
 
 banner(){
@@ -235,7 +235,7 @@ install_core(){
     if [[ -z "$mirror" && -f "${INSTALL_DIR}/.mirror" ]]; then
       mirror="$(cat "${INSTALL_DIR}/.mirror" 2>/dev/null | tr -d ' \r\n' || true)"
     fi
-    echo "Core binary not found in bundle dir. Downloading PenguTunnel v5.4.1 core..."
+    echo "Core binary not found in bundle dir. Downloading PenguTunnel v6.2.1 core..."
     local urls=()
     case "$mirror" in
       cdn|jsdelivr)
@@ -245,8 +245,8 @@ install_core(){
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
         )
         ;;
@@ -256,17 +256,17 @@ install_core(){
           "https://gh-proxy.com/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel"
-          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+          "https://gh-proxy.com/https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
           "https://ghproxy.net/https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
-          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
         )
         ;;
       *)
         urls=(
-          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel.gz"
-          "https://github.com/theneet0/PenguTunnel/releases/download/v5.4.1/pengutunnel"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel.gz"
+          "https://github.com/theneet0/PenguTunnel/releases/download/v6.2.1/pengutunnel"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel.gz"
           "https://raw.githubusercontent.com/theneet0/PenguTunnel/main/pengutunnel"
           "https://cdn.jsdelivr.net/gh/theneet0/PenguTunnel@main/pengutunnel.gz"
@@ -377,7 +377,7 @@ repair_existing(){
       else err "$svc did not remain active; inspect journalctl -u $svc"; rc=1; fi
     else err "Could not restart $svc"; rc=1; fi
   done
-  if (( rc == 0 )); then ok "Build 5.4.1 offline-1 / reviewed data-plane fix installed; restarted=$restarted skipped=$skipped"
+  if (( rc == 0 )); then ok "Build 6.2.1 offline-1 / reviewed data-plane fix installed; restarted=$restarted skipped=$skipped"
   else err "Build installed, but one or more service operations failed; restarted=$restarted skipped=$skipped"; fi
   return "$rc"
 }
@@ -564,6 +564,53 @@ cn_psk(){
 }
 cn_license(){ lic_enabled="false"; lic_key=""; return 3; }
 
+valid_ipv4(){
+  local value="$1" octet
+  local -a octets=()
+  [[ "$value" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] || return 1
+  IFS=. read -r -a octets <<< "$value"
+  for octet in "${octets[@]}"; do
+    [[ "$octet" == 0 || "$octet" != 0* ]] || return 1
+    (( 10#$octet <= 255 )) || return 1
+  done
+}
+
+diagnose_target(){
+  local host="${1:-}" port="${2:-}" route
+  valid_ipv4 "$host" && [[ "$port" =~ ^[0-9]{1,5}$ ]] || {
+    err "Usage: bash install.sh --diagnose-target IPV4 PORT"
+    return 2
+  }
+  port=$((10#$port))
+  (( port >= 1 && port <= 65535 )) || { err "Port must be between 1 and 65535."; return 2; }
+  local command_name
+  for command_name in ip ss timeout bash; do
+    command -v "$command_name" >/dev/null 2>&1 || { err "Required command is missing: $command_name"; return 1; }
+  done
+  printf '\nTarget %s port %s\n' "$host" "$port"
+  if ! route=$(ip -4 route get "$host" 2>&1); then
+    printf '%s\n' "$route"
+    err "No route to the target. Check the tunnel addresses and route on this server."
+    return 1
+  fi
+  printf '%s\n' "$route"
+  printf '\nLocal TCP listeners on this port\n'
+  ss -H -ltn "sport = :$port" || return 1
+  printf '\nOpening a TCP connection to the exact target\n'
+  if timeout 6 bash -c 'exec 3<>"/dev/tcp/$1/$2"' bash "$host" "$port" 2>/dev/null; then
+    ok "TCP target accepts connections. Application login, protocol and UDP require their own checks."
+    return 0
+  fi
+  err "Target does not accept TCP connections from this server."
+  printf '%s\n' \
+    'Run this same check on the foreign server.' \
+    'Verify that the destination TUN address is assigned there and the destination service is running.' \
+    'For a TUN target, its TCP listener must accept that address. A listener bound only to 127.0.0.1 cannot accept the TUN address.' \
+    'Check the exact destination port, local routing and firewall rules.'
+  return 1
+}
+
+
 cn_forward(){
   [[ "$side" == "1" ]] || return 3
   local _lip _base _last peer_tun
@@ -573,6 +620,8 @@ cn_forward(){
   local _fspecs=""
   echo "  ${D}Port-forward (optional): expose local TCP and/or UDP ports over the tunnel${N}"
   echo "  ${D}to the far side (${peer_tun}). TCP can keep the real client IP via PROXY v2.${N}"
+  echo "  ${D}Verify Kharej uses ${peer_tun} on its TUN interface and the target service accepts connections on it.${N}"
+  echo "  ${D}On Kharej check the target with bash install.sh --diagnose-target ${peer_tun} PORT.${N}"
   echo "  ${D}Enter ports comma-separated — a single port, a range, or PORT=FARPORT:${N}"
   echo "  ${D}  e.g.  2096,2097    or    200-300    or    8000=9000${N}"
   if [[ "$(ask_yn 'add TCP port-forward(s)? (y/n)' 'y')" == "y" ]]; then
@@ -1011,7 +1060,7 @@ configure_l4(){
         wyn '  proxy_protocol — send real client IP? (y/n)' 'n'; (( WIZ_BACK )) && { step=psk; continue; }; pp_gate="$WIZ_VAL"
         [[ "$pp_gate" == "y" ]] && echo "  ${D}proxy_protocol is asked for EACH entry (default no); it is set per-port, not globally.${N}"
         while true; do
-          local line; line="$(ask '  ports e.g. 2096,2097 or 200-300 (blank = done)' '')"
+          local line; line="$(ask '  TCP ports e.g. 2096,2097 or 200-300 (blank = done)' '')"
           [[ -z "$line" ]] && break
           local lpp="false"
           [[ "$pp_gate" == "y" && "$(ask_yn '    proxy_protocol for these? (y/n)' 'n')" == "y" ]] && lpp="true"
@@ -1026,6 +1075,29 @@ configure_l4(){
             ok "  + ${s}"
           done
         done
+        # UDP ports (core 6.2.0+): each UDP user rides the same carriers as a TCP user.
+        if core_at_least v6.2.0; then
+          if [[ "$(ask_yn '  add UDP port-forward(s)? (y/n)' 'n')" == "y" ]]; then
+            echo "  ${D}UDP ports (e.g. WireGuard 51820, Hysteria, TUIC). Each goes to the SAME UDP port${N}"
+            echo "  ${D}on 127.0.0.1 on Kharej. Needs core v6.2.0+ on BOTH servers. No proxy_protocol.${N}"
+            while true; do
+              local uline; uline="$(ask '  UDP ports e.g. 51820 or 7000-7100 (blank = done)' '')"
+              [[ -z "$uline" ]] && break
+              local uparts; IFS=',' read -ra uparts <<< "$uline"
+              local us
+              for us in "${uparts[@]}"; do
+                us="$(printf '%s' "$us" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                [[ -z "$us" ]] && continue
+                us="${us#udp/}"
+                fspecs="${fspecs}  \"udp/${us}\",
+"
+                ok "  + udp/${us}"
+              done
+            done
+          fi
+        else
+          echo "  ${D}UDP ports on a no-tun tunnel need core v6.2.0+ (update the core from the menu).${N}"
+        fi
         [[ -n "$fspecs" ]] || { err "an edge needs at least one forward port"; continue; }
         fwd_block="[forward]
 proxy_protocol = false
@@ -1254,7 +1326,7 @@ status_all(){
   pause
 }
 
-update_core(){ banner; warn "Pinned offline v5.4.1 core. Upgrade with a newly reviewed bundle on BOTH peers."; pause; }
+update_core(){ banner; warn "Pinned offline v6.2.1 core. Upgrade with a newly reviewed bundle on BOTH peers."; pause; }
 
 update_script(){ banner; warn "Use install.sh from a newly reviewed offline bundle."; pause; }
 AU_UNIT="pengu-core-autoupdate"
@@ -1652,8 +1724,14 @@ if [[ "${1:-}" == --check ]]; then
     err "Bundled binary checksum mismatch; nothing changed."; exit 1;
   }
   bash -n "${BASH_SOURCE[0]}" || exit 1
-  ok "Package verification passed: core v5.4.1 / installer v5.3.1"
+  ok "Package verification passed: core v6.2.1 / installer v5.4.0"
   exit 0
+fi
+
+if [[ "${1:-}" == --diagnose-target ]]; then
+  (( $# == 3 )) || { err "Usage: bash install.sh --diagnose-target IPV4 PORT"; exit 2; }
+  diagnose_target "$2" "$3"
+  exit $?
 fi
 
 need_root
